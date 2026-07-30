@@ -2,4 +2,7 @@
   "name": "jp-name-maker",
   "compatibility_date": "2026-07-30",
   "main": "./src/worker.ts",
+  // カスタムドメイン: Cloudflare がデプロイ時に DNS(CNAME) を自動作成・管理する
+  // (custom_domain: true)。Terraform 側で同名レコードを作らないこと(所有権の競合回避)。
+  "routes": [{ "pattern": "namemaker.kfdstudio.work", "custom_domain": true }],
 }

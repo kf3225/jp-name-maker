@@ -20,5 +20,7 @@ provider "cloudflare" {
 #   - cloudflare_workers_kv_namespace: レート制限カウンタ用（rl:{id}:{date}、ADR-0005 §1/§7）
 #   - cloudflare_turnstile_widget:     ボット対策（ADR-0005 §3）
 #   - cloudflare_record / zone:        公開ドメイン
-# Worker スクリプト本体は Wrangler がデプロイし、バインディング/KV/Turnstile 等は
-# Terraform が所有して生成 ID を wrangler.jsonc に渡す（ADR-0003）。
+# Worker スクリプト本体とカスタムドメイン(namemaker.kfdstudio.work)は Wrangler がデプロイし、
+# その際 Cloudflare がDNS(CNAME)を自動作成する。バインディング/KV/Turnstile 等は
+# Terraform が所有するが、カスタムドメインのDNSレコードは Wrangler 側の管理とし
+# Terraform で同名レコードを作らない（所有権競合の回避）。
