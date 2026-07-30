@@ -1,0 +1,4 @@
+title = "jp-name-maker"
+
+[extend]
+useDefault = true

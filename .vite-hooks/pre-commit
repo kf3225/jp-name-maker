@@ -1,1 +1,7 @@
 vp staged
+
+if command -v gitleaks >/dev/null 2>&1; then
+  gitleaks git --pre-commit --redact --config .gitleaks.toml
+else
+  echo "warn: gitleaks not installed locally; skipping secret scan (CI enforces it). Install: brew install gitleaks"
+fi
