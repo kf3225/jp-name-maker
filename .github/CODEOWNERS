@@ -6,6 +6,7 @@
 /AGENTS.md                  @kf3225
 /.vite-hooks/               @kf3225
 /.github/                   @kf3225
+/.opencode/                 @kf3225
 /docs/adr/                  @kf3225
 /terraform/                 @kf3225
 *.tf                        @kf3225

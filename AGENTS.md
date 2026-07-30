@@ -1,45 +1,48 @@
-# jp-name-maker — エージェント運用ルール
+# jp-name-maker — エージェント運用インデックス
 
-このプロジェクトでコーディングエージェントが作業する際の運用ルール。
-グローバルルール（出力は日本語）に加え、本项目固有の制約を定める。
+このプロジェクトでエージェントが作業するための**索引と運用ルール**。詳細は各リンク先を参照。グローバルルール（出力は日本語）に加え、本项目固有の制約を定める。
+
+## 作業パイプライン（サブエージェント）
+
+- **`/issue <N>`** — issue 番号を指定すると **計画→計画レビュー→実装→実装レビュー→PR** を自動実行（定義: `.opencode/command/issue.md`）。
+- サブエージェント定義: `.opencode/agent/`
+  - **issue-planner** — 縦剖断の実装計画を立案（読み取り専用）
+  - **plan-reviewer** — 計画を審査、`OK`/`CHANGES_REQUESTED` を返す（最大3往復・読み取り専用）
+  - **implementer** — `../jp-name-maker.worktree/<ブランチ>` に git worktree を切り、**関数型/OCP** で実装・`vp check/test/build` を Green にしてコミット
+  - **impl-reviewer** — 実装差分を**パフォーマンス/セキュリティ最重視**で審査（最大3往復・読み取り専用）
+  - **pr-author** — push と PR 作成（`.github/pull_request_template.md` 準拠）
 
 ## 必須ワークフロー
 
-- **コミット前に必ず `vp check` を通す**（フォーマット/リント/型エラーを残さない）。
-- **コミットメッセージは Conventional Commits 形式**（`type: subject`）。`subject-case` は無効化済みだが `type` は必須。commit-msg フックと CI の両方で強制される。
-- 新規ロジックには **`vp test` で走るテストを添える**（特にドメイン不変量＝実在姓制約など）。
-- **秘密は絶対に commit しない**（APIキー・`.dev.vars`・`.env`・シークレット値）。pre-commit/CI の gitleaks と GitHub Push Protection が検知する。
-- `dist/` `node_modules/` `.wrangler/` `.vite-hooks/_/` は commit しない（`.gitignore` 済み）。
-
-## 技術スタック規約
-
-- **Worker(API)は Hono + Effect** で書く。Effect のイディオム（generators／`yield*`／Layer によるDI／`Effect.retry` による検証→再生成）に従う（ADR-0001/0006）。
-- **スキーマは Effect.Schema のみ**。zod/valibot は混ぜない（ADR-0004 改訂）。
-- **クライアント(Preact)に Effect ランタイムを入れない**。スキーマから `import type` で型だけ共有する。
-- パッケージ操作・実行は **pnpm / `vp` 経由**（npm/yarn は使わない）。
-- `.vite-hooks/_/` は `vp config` が生成する（編集しない）。ユーザフックは `.vite-hooks/<hook>` に置く。
-- 姓の生成は常に**実在姓**に限定し、捏ねた珍姓を出さない（ADR-0001、CONTEXT.md「実在姓」）。
+- コミット前に **`vp check`**（fmt/lint/型）。コミットは **Conventional Commits**（`type: subject`・type 必須・subject-case 無効化済）。
+- 新規ロジックには **`vp test`** で走るテストを（特に実在姓制約などのドメイン不変量）。
+- 秘密は絶対に commit しない（gitleaks / Push Protection）。
+- `dist/` `node_modules/` `.wrangler/` `.vite-hooks/_/` は commit しない。
 
 ## 自律範囲と要承認事項
 
-以下は**人間の確認が必須**。勝手に実行・変更しないこと（該当 PR を作り、レビューを仰ぐ）。
+以下は**人間の確認が必須**（該当 PR を作り、レビューを仰ぐ）:
 
 - 本番デプロイ・`main` への push・マージ
-- `AGENTS.md` / CI(`.github/`) / `.vite-hooks/` / `CODEOWNERS` の変更
-- Terraform(`*.tf`, `*.tfvars`) / インフラ構成の変更
-- `docs/adr/` 配下の ADR の追加・変更（アーキテクチャ決定）
+- `AGENTS.md` / `.github/` / **`.opencode/`** / `.vite-hooks/` / `CODEOWNERS` の変更
+- `docs/adr/`（アーキテクチャ決定）/ Terraform(`*.tf`,`*.tfvars`) / インフラ構成の変更
 - `wrangler.jsonc` / `pnpm-workspace.yaml`（Vite+ override）の変更
-- 新規シークレットの導入・外部 API キーの扱い
+- 新規シークレットの導入
 
 ## 禁止事項
 
-- **自分のガードレールを弱めない／回避しない**（このファイル・CI・hooks・CODEOWNERS・リント/型ルールの無効化や回避）。
+- **自分のガードレールを弱めない/回避しない**（本ファイル・CI・hooks・`.opencode/`・CODEOWNERS・リント/型ルール）。
 - テスト/リント/型チェックを通すためだけに、理由なくルールを無効化しない。
-- `CONTEXT.md` の用語と矛盾する命名をしない（ドメイン用語集を参照）。
-- 実装前に `docs/adr/` を確認し、決定と矛盾する実装をしない。
+- `CONTEXT.md` の用語と矛盾する命名をしない。実装前に ADR を確認。
 
-## 参照
+## 索引
 
-- ドメイン用語: `CONTEXT.md`
-- 要件定義: `docs/requirements.md`
-- アーキテクチャ決定: `docs/adr/0001`〜`0006`
+| 目的                      | 参照先                                                      |
+| ------------------------- | ----------------------------------------------------------- |
+| ドメイン用語              | `CONTEXT.md`                                                |
+| 要件定義                  | `docs/requirements.md`                                      |
+| アーキテクチャ決定        | `docs/adr/0001`〜`0006`                                     |
+| 開発ガードレール詳細      | `docs/adr/0005`                                             |
+| 技術スタック              | `docs/adr/0004`（スタック）・`docs/adr/0006`（Effect コア） |
+| サブエージェント/コマンド | `.opencode/agent/`・`.opencode/command/`                    |
+| issue トラッカー          | GitHub Issues（`ready-for-agent` ラベル = 着手可能）        |
