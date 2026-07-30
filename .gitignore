@@ -1,0 +1,33 @@
+# dependencies
+node_modules/
+
+# build output
+dist/
+.vite/
+
+# cloudflare / wrangler
+.wrangler/
+.mf/
+.dev.vars
+.dev.vars.*
+
+# env
+.env
+.env.*
+!.env.example
+
+# terraform
+*.tfstate
+*.tfstate.*
+.terraform/
+.terraform.lock.hcl
+crash.log
+
+# os / editor
+.DS_Store
+.vscode/*
+!.vscode/extensions.json
+.idea/
+
+# vite+ generated hook dispatchers (user hook scripts in .vite-hooks/ ARE committed)
+.vite-hooks/_/

@@ -1,0 +1,7 @@
+overrides:
+  vite: 'npm:@voidzero-dev/vite-plus-core@^0.2.6'
+
+# pnpm 11 per-package build-script approval (deny by default — supply-chain guardrail)
+allowBuilds:
+  esbuild: true
+  workerd: true
