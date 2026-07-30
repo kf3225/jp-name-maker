@@ -1,15 +1,15 @@
-# デフォルト所有者（※リポジトリに合わせて @k を正しい handle に変更すること）
-* @k
+# デフォルト所有者
+* @kf3225
 
 # 機密パス — 変更は所有者のレビュー必須
 # (LLMエージェントが自分のガードレールを無断で弱めるのを防ぐ)
-/AGENTS.md                  @k
-/.vite-hooks/               @k
-/.github/                   @k
-/docs/adr/                  @k
-/terraform/                 @k
-*.tf                        @k
-*.tfvars                    @k
-pnpm-workspace.yaml         @k
-vite.config.ts              @k
-wrangler.jsonc              @k
+/AGENTS.md                  @kf3225
+/.vite-hooks/               @kf3225
+/.github/                   @kf3225
+/docs/adr/                  @kf3225
+/terraform/                 @kf3225
+*.tf                        @kf3225
+*.tfvars                    @kf3225
+pnpm-workspace.yaml         @kf3225
+vite.config.ts              @kf3225
+wrangler.jsonc              @kf3225
