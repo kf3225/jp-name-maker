@@ -5,8 +5,10 @@ import { cloudflare } from '@cloudflare/vite-plugin';
 
 const ignores = ['.agents/**', 'dist/**', '.vite-hooks/**', '.wrangler/**', 'node_modules/**'];
 
-export default defineConfig({
-  plugins: [preact(), tailwindcss(), cloudflare()],
+// Cloudflare Vite plugin はビルド/開発時のみ。テスト時は除外しないと
+// ワーカー環境の resolve.external が Vitest と競合して起動できない。
+export default defineConfig(({ mode }) => ({
+  plugins: [preact(), tailwindcss(), ...(mode === 'test' ? [] : [cloudflare()])],
   fmt: {
     ignorePatterns: ignores,
     singleQuote: true,
@@ -21,4 +23,4 @@ export default defineConfig({
   staged: {
     '*.{js,ts,tsx}': 'vp check --fix',
   },
-});
+}));
