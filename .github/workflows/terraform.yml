@@ -1,0 +1,56 @@
+name: terraform
+
+on:
+  pull_request:
+    paths:
+      - "terraform/**"
+      - ".github/workflows/terraform.yml"
+  push:
+    branches: [main]
+    paths:
+      - "terraform/**"
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  plan:
+    name: terraform plan (PR)
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    env:
+      TF_VAR_cloudflare_api_token: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      TF_VAR_cloudflare_account_id: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "~> 1.9"
+      - name: terraform init
+        working-directory: terraform
+        run: terraform init -input=false
+      - name: terraform plan
+        working-directory: terraform
+        run: terraform plan -input=false -no-color
+      # plan をPRコメントで投稿する仕組みは実運用で追加（例: terraform-cloud / terraform-pr-comment 系 action）
+
+  apply:
+    name: terraform apply (production, gated)
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment: production # GitHub Environments の required reviewers で手動承認ゲート（ADR-0005 §7）
+    env:
+      TF_VAR_cloudflare_api_token: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      TF_VAR_cloudflare_account_id: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "~> 1.9"
+      - name: terraform init
+        working-directory: terraform
+        run: terraform init -input=false
+      - name: terraform apply
+        working-directory: terraform
+        run: terraform apply -input=false -auto-approve

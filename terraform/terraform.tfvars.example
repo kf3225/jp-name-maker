@@ -1,0 +1,5 @@
+# このファイルを terraform.tfvars にコピーして値を埋める（terraform.tfvars は commit しない）。
+cloudflare_account_id = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+
+# cloudflare_api_token はここに書かないこと。
+# CI: CLOUDFLARE_API_TOKEN Secret → TF_VAR_cloudflare_api_token 経由で渡す。
