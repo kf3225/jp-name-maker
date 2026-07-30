@@ -7,8 +7,10 @@
 /.vite-hooks/               @kf3225
 /.github/                   @kf3225
 /.opencode/                 @kf3225
-/.claude/                   @kf3225
-/.agents/workflow.md        @kf3225
+/opencode.json             @kf3225
+/.claude/                  @kf3225
+/.agents/agents/           @kf3225
+/.agents/workflow.md       @kf3225
 /docs/adr/                  @kf3225
 /terraform/                 @kf3225
 *.tf                        @kf3225
