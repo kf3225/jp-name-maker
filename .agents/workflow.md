@@ -1,9 +1,6 @@
-# Issue → PR ワークフロー（クロスツール）
+# Issue → PR ワークフロー
 
-GitHub issue から PR までの**共通ワークフロー**。opencode / Claude Code で同じ手順を辿れるようにする。
-
-- **ロールのプロンプト本体（正）**: `.agents/agents/<role>.md`。各ツールのエージェント定義はここを参照する（opencode は `opencode.json` の `{file:}`、Claude Code は `.claude/agents/`）。
-- パイプラインのオーケストレーションと共通規約はこの文書。
+`/issue <N>` で動く、issue から PR までのパイプライン。サブエージェント定義は `.opencode/agents/<role>.md`、オーケストレーションは `.opencode/command/issue.md`。この文書はパイプラインと共通規約の参照。
 
 ## パイプライン
 
@@ -19,29 +16,19 @@ issue 番号 `N` を指定して起動。
 
 いずれのレビューも3往復で OK にならなければ、未解決指摘をユーザーに提示して判断を仰ぐ。
 
-## ロール（詳細は `.agents/agents/<role>.md`）
+## ロール（定義は `.opencode/agents/<role>.md`）
 
 | ロール | モード | 役割 |
 |---|---|---|
-| [issue-planner](agents/issue-planner.md) | 読み取り専用 | 縦剖断の計画立案 |
-| [plan-reviewer](agents/plan-reviewer.md) | 読み取り専用・最大3往復 | 計画審査 → OK/CHANGES_REQUESTED |
-| [implementer](agents/implementer.md) | 編集可 | worktree(`../jp-name-maker.worktree/<branch>`)・関数型/OCP 実装 |
-| [impl-reviewer](agents/impl-reviewer.md) | 読み取り専用・最大3往復 | 性能/セキュリティ最重視の審査 |
-| [pr-author](agents/pr-author.md) | PR作成 | push ＋ テンプレートで PR |
+| issue-planner | 読み取り専用 | 縦剖断の計画立案 |
+| plan-reviewer | 読み取り専用・最大3往復 | 計画審査 → OK/CHANGES_REQUESTED |
+| implementer | 編集可 | worktree(`../jp-name-maker.worktree/<branch>`)・関数型/OCP 実装 |
+| impl-reviewer | 読み取り専用・最大3往復 | 性能/セキュリティ最重視の審査 |
+| pr-author | PR作成 | push ＋ テンプレートで PR |
 
-## ツール別の実行方法
+## 共通規約（全ロール）
 
-### opencode
-
-- `/issue N`（`.opencode/command/issue.md`）。サブエージェントは `opencode.json` の `agent` ブロック（プロンプトは `.agents/agents/<role>.md` を `{file:}` 参照）。
-
-### Claude Code
-
-- `/issue N`（`.claude/commands/issue.md`）。サブエージェントは `.claude/agents/<role>.md`（実行時に `.agents/agents/<role>.md` を読む）。
-
-## 共通規約（全ロール・全ツール）
-
-- ガードレール遵守: `AGENTS.md` / `CLAUDE.md` / `.github/` / `.opencode/` / `.claude/` / `.agents/agents/` / `.agents/workflow.md` / `.vite-hooks/` / `CODEOWNERS` / Terraform(`*.tf`,`*.tfvars`) / `docs/adr/` の変更は人間の承認が必須。
+- ガードレール遵守: `AGENTS.md` / `.github/` / `.opencode/` / `.agents/workflow.md` / `.vite-hooks/` / `CODEOWNERS` / Terraform(`*.tf`,`*.tfvars`) / `docs/adr/` の変更は人間の承認が必須。
 - コミット前に `vp check`。秘密は絶対 commit しない（gitleaks / Push Protection）。
 - `dist/` `node_modules/` `.wrangler/` `.vite-hooks/_/` は commit しない。
 - ドメイン用語は `CONTEXT.md`、アーキテクチャは ADR を遵守。

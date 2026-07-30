@@ -2,14 +2,11 @@
 
 このプロジェクトでエージェントが作業するための**索引と運用ルール**。詳細は各リンク先を参照。グローバルルール（出力は日本語）に加え、本项目固有の制約を定める。
 
-## 作業パイプライン（クロスツール）
+## 作業パイプライン
 
-issue 番号を指定すると **計画→計画レビュー→実装→実装レビュー→PR** を自動実行。**ロールのプロンプト本体（正）は `.agents/agents/<role>.md`**、パイプラインと共通規約は `.agents/workflow.md`。
+`/issue <N>` で **計画→計画レビュー→実装→実装レビュー→PR** を自動実行（オーケストレーション: `.opencode/command/issue.md`、パイプラインと共通規約: `.agents/workflow.md`）。
 
-- **opencode**: `/issue <N>`（`.opencode/command/issue.md`）。サブエージェントは `opencode.json` の `agent` ブロック（`.agents/agents/<role>.md` を `{file:}` 参照）。
-- **Claude Code**: `/issue <N>`（`.claude/commands/issue.md`）。サブエージェントは `.claude/agents/`（実行時に `.agents/agents/<role>.md` を読む）。
-
-5ロール: **issue-planner**（計画・読み取り専用）/ **plan-reviewer**（計画レビュー・最大3往復）/ **implementer**（worktree `../jp-name-maker.worktree/<branch>`・関数型/OCP）/ **impl-reviewer**（性能・セキュリティ最重視・最大3往復）/ **pr-author**（PR作成）。ロール本文は1箇所（`.agents/agents/`）に SSoT 化し、各ツールのアダプタから参照する。
+5ロール（定義: `.opencode/agents/`）: **issue-planner**（計画・読み取り専用）/ **plan-reviewer**（計画レビュー・最大3往復）/ **implementer**（worktree `../jp-name-maker.worktree/<branch>`・関数型/OCP）/ **impl-reviewer**（性能・セキュリティ最重視・最大3往復）/ **pr-author**（PR作成）。
 
 ## 必須ワークフロー
 
@@ -23,7 +20,7 @@ issue 番号を指定すると **計画→計画レビュー→実装→実装�
 以下は**人間の確認が必須**（該当 PR を作り、レビューを仰ぐ）:
 
 - 本番デプロイ・`main` への push・マージ
-- `AGENTS.md` / `CLAUDE.md` / `.github/` / `.opencode/` / `opencode.json` / `.claude/` / `.agents/agents/` / `.agents/workflow.md` / `.vite-hooks/` / `CODEOWNERS` の変更
+- `AGENTS.md` / `.github/` / `.opencode/` / `.agents/workflow.md` / `.vite-hooks/` / `CODEOWNERS` の変更
 - `docs/adr/`（アーキテクチャ決定）/ Terraform(`*.tf`,`*.tfvars`) / インフラ構成の変更
 - `wrangler.jsonc` / `pnpm-workspace.yaml`（Vite+ override）の変更
 - 新規シークレットの導入
@@ -36,14 +33,13 @@ issue 番号を指定すると **計画→計画レビュー→実装→実装�
 
 ## 索引
 
-| 目的                  | 参照先                                                                                                   |
-| --------------------- | -------------------------------------------------------------------------------------------------------- |
-| ドメイン用語          | `CONTEXT.md`                                                                                             |
-| 要件定義              | `docs/requirements.md`                                                                                   |
-| アーキテクチャ決定    | `docs/adr/0001`〜`0006`                                                                                  |
-| 開発ガードレール詳細  | `docs/adr/0005`                                                                                          |
-| 技術スタック          | `docs/adr/0004`（スタック）・`docs/adr/0006`（Effect コア）                                              |
-| ロール プロンプト(正) | `.agents/agents/`                                                                                        |
-| ワークフロー(正)      | `.agents/workflow.md`                                                                                    |
-| アダプタ/コマンド     | `opencode.json`・`.opencode/command/`（opencode）／`.claude/agents/`・`.claude/commands/`（Claude Code） |
-| issue トラッカー      | GitHub Issues（`ready-for-agent` ラベル = 着手可能）                                                     |
+| 目的                  | 参照先                                                      |
+| --------------------- | ----------------------------------------------------------- |
+| ドメイン用語          | `CONTEXT.md`                                                |
+| 要件定義              | `docs/requirements.md`                                      |
+| アーキテクチャ決定    | `docs/adr/0001`〜`0006`                                     |
+| 開発ガードレール詳細  | `docs/adr/0005`                                             |
+| 技術スタック          | `docs/adr/0004`（スタック）・`docs/adr/0006`（Effect コア） |
+| サブエージェント      | `.opencode/agents/`                                         |
+| ワークフロー/コマンド | `.agents/workflow.md`・`.opencode/command/`                 |
+| issue トラッカー      | GitHub Issues（`ready-for-agent` ラベル = 着手可能）        |

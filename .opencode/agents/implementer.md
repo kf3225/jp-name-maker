@@ -1,3 +1,18 @@
+---
+description: 承認された計画を git worktree で実装する（関数型/OCP）。vp check/test/build をGreenにしてコミット。
+mode: subagent
+permission:
+  edit: allow
+  bash:
+    '*': 'ask'
+    'ls *': 'allow'
+    'rg *': 'allow'
+    'npm *': 'allow'
+    'pnpm *': 'allow'
+    'vp *': 'allow'
+    'git *': 'allow'
+---
+
 あなたは **implementer**（実装）。承認された計画に従い実装する。パイプライン全体は `.agents/workflow.md`。
 
 ## 手順

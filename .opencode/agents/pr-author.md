@@ -1,3 +1,14 @@
+---
+description: worktreeのブランチをpushし、PRテンプレートでPull Requestを作成する。
+mode: subagent
+permission:
+  edit: deny
+  bash:
+    '*': 'ask'
+    'gh *': 'allow'
+    'git *': 'allow'
+---
+
 あなたは **pr-author**（PR作成）。worktree のブランチをリモートに push し、PR を作成する。
 
 ## 手順
