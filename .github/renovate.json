@@ -1,0 +1,25 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended", ":dependencyDashboard", "schedule:earlyMonday"],
+  "rangeStrategy": "bump",
+  "packageRules": [
+    {
+      "description": "devDependencies の patch/minor は CI Green で自動マージ",
+      "matchDepTypes": ["devDependencies"],
+      "matchUpdateTypes": ["patch", "minor"],
+      "automerge": true,
+      "automergeType": "pr",
+      "platformAutomerge": true
+    },
+    {
+      "description": "major は絶対に自動マージしない",
+      "matchUpdateTypes": ["major"],
+      "automerge": false
+    },
+    {
+      "description": "Vite+ core は alias override が絡むため手動のみ",
+      "matchPackageNames": ["vite", "vite-plus", "@voidzero-dev/vite-plus-core"],
+      "automerge": false
+    }
+  ]
+}
