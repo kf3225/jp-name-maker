@@ -1,6 +1,6 @@
 # Issue → PR ワークフロー（クロスツール）
 
-GitHub issue から PR までの**共通ワークフロー**。opencode / Claude Code / Codex 等、どのツールでも同じ手順を辿れるようにする。
+GitHub issue から PR までの**共通ワークフロー**。opencode / Claude Code で同じ手順を辿れるようにする。
 
 - **ロールのプロンプト本体（正）**: `.agents/agents/<role>.md`。各ツールのエージェント定義はここを参照する（opencode は `opencode.json` の `{file:}`、Claude Code は `.claude/agents/`）。
 - パイプラインのオーケストレーションと共通規約はこの文書。
@@ -38,10 +38,6 @@ issue 番号 `N` を指定して起動。
 ### Claude Code
 
 - `/issue N`（`.claude/commands/issue.md`）。サブエージェントは `.claude/agents/<role>.md`（実行時に `.agents/agents/<role>.md` を読む）。
-
-### Codex / その他（サブエージェント非対応）
-
-**シングルエージェントモード**: 1人のエージェントが順に実行。各レビュー段階は自己審査のうえ**ユーザーに承認を得る**（`OK`/修正指示）。最大3往復・worktree・コミット規約は同じ。`AGENTS.md` とこの文書と `.agents/agents/` を読めば実行できる。
 
 ## 共通規約（全ロール・全ツール）
 

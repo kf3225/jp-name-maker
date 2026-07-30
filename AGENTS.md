@@ -8,7 +8,6 @@ issue 番号を指定すると **計画→計画レビュー→実装→実装�
 
 - **opencode**: `/issue <N>`（`.opencode/command/issue.md`）。サブエージェントは `opencode.json` の `agent` ブロック（`.agents/agents/<role>.md` を `{file:}` 参照）。
 - **Claude Code**: `/issue <N>`（`.claude/commands/issue.md`）。サブエージェントは `.claude/agents/`（実行時に `.agents/agents/<role>.md` を読む）。
-- **Codex / その他**: `AGENTS.md`＋`.agents/workflow.md`＋`.agents/agents/` を読み、シングルエージェントモードで同パイプラインを実行（各レビューはユーザー承認）
 
 5ロール: **issue-planner**（計画・読み取り専用）/ **plan-reviewer**（計画レビュー・最大3往復）/ **implementer**（worktree `../jp-name-maker.worktree/<branch>`・関数型/OCP）/ **impl-reviewer**（性能・セキュリティ最重視・最大3往復）/ **pr-author**（PR作成）。ロール本文は1箇所（`.agents/agents/`）に SSoT 化し、各ツールのアダプタから参照する。
 
