@@ -21,6 +21,6 @@ export default defineConfig(({ mode }) => ({
     },
   },
   staged: {
-    '*.{js,ts,tsx}': 'vp check --fix',
+    '*.{js,mjs,cjs,ts,tsx,jsx,json,jsonc,yml,yaml,md}': 'vp check --fix',
   },
 }));
