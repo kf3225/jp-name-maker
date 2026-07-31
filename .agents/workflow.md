@@ -9,7 +9,7 @@ issue 番号 `N` を指定して起動。
 0. **事前確認**: `gh issue view N`。`ready-for-agent` ラベルを推奨。
 1. **計画立案**（issue-planner）: 縦剖断の実装計画。
 2. **計画レビュー**（plan-reviewer）: `OK`/`CHANGES_REQUESTED`。**最大3往復**。
-3. **実装**（implementer）: worktree で実装。`vp check/test/build` Green → コミット（push しない）。
+3. **実装**（implementer）: worktree で実装。**TDD（red-green）で進める**（`tdd` スキル: `.claude/skills/tdd/`）— 縦スライスで「失敗テスト → 最小実装」を繰り返す。`vp check/test/build` Green → コミット（push しない）。
 4. **実装レビュー**（impl-reviewer）: **性能/セキュリティ最重視**。**最大3往復**。
 5. **PR作成**（pr-author）: push して `.github/pull_request_template.md` で PR。**AC確認**: 関連issueの各ACが本PRで解決されたか検証し、PR本文にAC対応表（達成/未達成・根拠）を載せる。解決したACは **issue本文のチェックボックスを `- [x]` に更新**（`gh issue view N --json body` → 該当AC行を `- [x]` → `gh issue edit N --body`）。全AC解決で `Closes #N`（自動クローズ）、未解決があれば `Closes` を付けず残課題と移管先をPR本文に明記。
 6. **報告**: PR URL と各ラウンド結果を要約。
