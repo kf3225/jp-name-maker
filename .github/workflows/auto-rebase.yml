@@ -1,0 +1,112 @@
+name: auto-rebase
+
+# main 更新時に base=main のオープンPR（同一リポジトリのみ）を自動 rebase し "out-of-date" を解消する。
+# コンフリクト時は GLM (Z.ai, OpenAI 互換) で解決を試みる（最大3回）。
+# 完全自动マージはしない（解決後 CI が必須・人間承認）。
+# Merge Queue は GitHub UI が Rulesets に移行して設定が分かりにくいため Actions で実装。
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: auto-rebase
+  cancel-in-progress: false
+
+jobs:
+  rebase:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Rebase open PRs (GLM conflict resolution on failure)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GLM_API_KEY: ${{ secrets.GLM_API_KEY }}
+          GLM_BASE_URL: ${{ vars.GLM_BASE_URL }}
+          GLM_MODEL: ${{ vars.GLM_MODEL }}
+        run: |
+          set -uo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          # needs-rebase ラベルを冪等に作成（コンフリクト未解決時に付与）
+          gh label create needs-rebase --color BFD4F2 --description "auto-rebase couldn't auto-resolve conflicts" 2>/dev/null || true
+
+          gh pr list --base main --state open \
+            --json number,headRepositoryOwner,headRefName \
+            --jq '.[] | select(.headRepositoryOwner.login == "${{ github.repository_owner }}") | "\(.number)\t\(.headRefName)"' \
+            | while IFS=$'\t' read -r number head; do
+                [ -z "${number:-}" ] && continue
+                echo "=== PR #$number ($head) ==="
+
+                git fetch origin "$head" 2>/dev/null || { echo "skip #$number: fetch failed"; continue; }
+                git checkout -B "$head" "origin/$head"
+
+                # クリーン rebase 試行
+                if git rebase origin/main; then
+                  echo "PR #$number: clean rebase"
+                  git push --force-with-lease origin "$head"
+                  gh pr edit "$number" --remove-label needs-rebase 2>/dev/null || true
+                  continue
+                fi
+
+                # コンフリクト → GLM 解決フロー
+                echo "PR #$number: conflict — attempting GLM resolution"
+
+                if [ -z "${GLM_API_KEY:-}" ]; then
+                  echo "skip #$number: GLM_API_KEY not configured"
+                  gh pr comment "$number" --body "⚠️ コンフリクトがありますが GLM_API_KEY が未設定のため自動解決できません。手動で対応してください。" || true
+                  gh pr edit "$number" --add-label needs-rebase 2>/dev/null || true
+                  git rebase --abort 2>/dev/null || true
+                  continue
+                fi
+
+                # セキュリティ: コンフリクトファイルに明らかなシークレットパターンがあれば中止
+                # （gitleaks による厳密スキャンは今後の拡張ポイント）
+                if git diff --name-only --diff-filter=U | grep -qiE '(^|/)(\.env|secrets?|credentials?)(\.|$)|api[_-]?key|secret|password|token'; then
+                  echo "skip #$number: potential secret in conflict files"
+                  gh pr comment "$number" --body "⚠️ コンフリクト解決をスキップ（シークレットの可能性があるファイルを含む）。手動で対応してください。" || true
+                  gh pr edit "$number" --add-label needs-rebase 2>/dev/null || true
+                  git rebase --abort 2>/dev/null || true
+                  continue
+                fi
+
+                # GLM 解決ループ（最大3回）
+                resolved=0
+                for attempt in 1 2 3; do
+                  echo "GLM attempt $attempt"
+                  if node .github/scripts/resolve-conflicts.mjs; then
+                    if GIT_EDITOR=true git rebase --continue; then
+                      resolved=1
+                      break
+                    fi
+                    echo "still conflicts, retrying"
+                  else
+                    echo "GLM resolution failed at attempt $attempt"
+                    break
+                  fi
+                done
+
+                if [ "$resolved" = "1" ]; then
+                  echo "PR #$number: resolved via GLM"
+                  git push --force-with-lease origin "$head"
+                  gh pr comment "$number" --body "🤖 GLM がコンフリクトを解決しました。CI が通ることを確認してください（完全自動マージはしません）。" || true
+                  gh pr edit "$number" --remove-label needs-rebase 2>/dev/null || true
+                else
+                  echo "PR #$number: resolution failed"
+                  gh pr comment "$number" --body "⚠️ GLM によるコンフリクト解決に失敗しました。手動で対応してください。" || true
+                  gh pr edit "$number" --add-label needs-rebase 2>/dev/null || true
+                  git rebase --abort 2>/dev/null || true
+                fi
+              done
