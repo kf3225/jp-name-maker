@@ -1,5 +1,5 @@
 import { createContext } from 'preact';
-import { useContext, useState } from 'preact/hooks';
+import { useContext, useEffect, useState } from 'preact/hooks';
 import type { ComponentChildren, VNode } from 'preact';
 import type { Locale } from '../core/schema';
 import { persistLocale, type LocaleWriter } from './index';
@@ -8,6 +8,8 @@ import { persistLocale, type LocaleWriter } from './index';
  * ADR-0007: Preact Context でロケール状態を配線。
  * `@preact/signals` は使わず、標準の `useState` + Context のみ（依存追加なし・~50行の自前モジュール）。
  * `setLocale(l)` が `persistLocale()`（`localStorage.setItem('jp-nm:locale', l)` + `<html lang>` 同期）を担う。
+ * 初回マウント時にも `persistLocale(initial)` を走らせ、`index.html` の固定 `lang="en"` を
+ * 検出ロケールへ lockstep させる（a11y + SEO）。
  */
 export interface LocaleContextValue {
   readonly locale: Locale;
@@ -29,13 +31,21 @@ export interface LocaleProviderProps {
 
 export function LocaleProvider({ initial, children, env }: LocaleProviderProps): VNode {
   const [locale, setLocaleState] = useState<Locale>(initial);
+  const writer: LocaleWriter = env ?? {
+    localStorage: globalThis.localStorage,
+    document: globalThis.document,
+  };
+
+  // 初回マウント時に <html lang> と localStorage を初期ロケールへ同期（ADR-0007 lockstep）。
+  // 依存配列は空＝マウント時に1回だけ。`initial`/`writer` は変わらない前提。
+  useEffect(() => {
+    persistLocale(initial, writer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const setLocale = (next: Locale): void => {
     setLocaleState(next);
-    persistLocale(
-      next,
-      env ?? { localStorage: globalThis.localStorage, document: globalThis.document },
-    );
+    persistLocale(next, writer);
   };
 
   return <LocaleContext.Provider value={{ locale, setLocale }}>{children}</LocaleContext.Provider>;
