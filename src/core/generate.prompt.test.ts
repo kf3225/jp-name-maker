@@ -37,4 +37,22 @@ describe('buildGivenNamePrompt', () => {
     const system = messages.find((m) => m.role === 'system');
     expect(system?.content).not.toContain('性別の響き');
   });
+
+  it('injects the locale as the rationale generation language when locale=ja (ADR-0007 wiring)', () => {
+    const { messages } = buildGivenNamePrompt({ name: 'John', locale: 'ja' });
+    const system = messages.find((m) => m.role === 'system');
+    expect(system?.content).toContain('日本語');
+  });
+
+  it('injects the locale as the rationale generation language when locale=en (ADR-0007 wiring)', () => {
+    const { messages } = buildGivenNamePrompt({ name: 'John', locale: 'en' });
+    const system = messages.find((m) => m.role === 'system');
+    expect(system?.content).toContain('英語');
+  });
+
+  it('omits the locale line when locale is absent (backward compatible)', () => {
+    const { messages } = buildGivenNamePrompt({ name: 'John' });
+    const system = messages.find((m) => m.role === 'system');
+    expect(system?.content).not.toContain('根拠テキストの生成言語');
+  });
 });

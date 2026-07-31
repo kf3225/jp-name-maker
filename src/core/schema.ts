@@ -1,6 +1,24 @@
 import { Schema } from 'effect';
 
 /**
+ * ロケール（ADR-0007）。アプリは en/ja の2ロケールで提供する。
+ * サーバーはユーザー選択ロケールを LLM プロンプトに注入し、自由テキスト（根拠等）の生成言語を固定する。
+ * クライアントはこれを `import type` で参照し、翻訳辞書のキー解決に用いる（Effect ランタイム非搭載）。
+ */
+export const Locale = Schema.Literal('en', 'ja');
+export type Locale = Schema.Schema.Type<typeof Locale>;
+
+/**
+ * 候補の根拠軸（CONTEXT.md・ADR-0007）。姓・名を問わず成り立つ3軸。
+ * 構造化 enum で言語不変。UI の軸ラベルはクライアント辞書が各ロケールに翻訳する。
+ *   - sound     : 響き名 (Sound-name)
+ *   - meaning   : 意味名 (Meaning-name)
+ *   - fallback  : フォールバック (Fallback・姓のみ)
+ */
+export const Axis = Schema.Literal('sound', 'meaning', 'fallback');
+export type Axis = Schema.Schema.Type<typeof Axis>;
+
+/**
  * 性別（CONTEXT.md「候補」生成の入力軸の1つ）。未選択を許容するため呼び出し側で optional 扱い。
  */
 export const Gender = Schema.Literal('male', 'female', 'neutral');
@@ -47,5 +65,10 @@ export const GenerateInput = Schema.Struct({
   roots: Schema.optional(Schema.String.pipe(Schema.maxLength(ROOTS_MAX))),
   gender: Schema.optional(Gender),
   tone: Schema.optional(Schema.Array(ToneTag)),
+  /**
+   * ロケール（ADR-0007）。ボディ優先・無ければ Accept-Language で解決。
+   * 生成コアはこれを LLM プロンプト注入に使う。省略時は現状維持（前方互換）。
+   */
+  locale: Schema.optional(Locale),
 });
 export type GenerateInput = Schema.Schema.Type<typeof GenerateInput>;
