@@ -1,0 +1,37 @@
+name: auto-rebase
+
+# main 更新時に base=main のオープンPR（同一リポジトリのみ）を自動 rebase し "out-of-date" を解消する。
+# Merge Queue は GitHub UI が Rulesets に移行して設定が分かりにくいため Actions で実装。
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: auto-rebase
+  cancel-in-progress: false
+
+jobs:
+  rebase:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Rebase open PRs onto main
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh pr list --base main --state open \
+            --json number,headRepositoryOwner,headRefName \
+            --jq '.[] | select(.headRepositoryOwner.login == "${{ github.repository_owner }}") | "\(.number) \(.headRefName)"' \
+            | while read -r number head; do
+                echo "Rebasing PR #$number ($head)"
+                gh pr update-branch --rebase "$number" \
+                  || echo "PR #$number: rebase skipped (conflict or ineligible)"
+              done
