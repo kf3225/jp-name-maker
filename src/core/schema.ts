@@ -34,10 +34,17 @@ export type GenerateResult = Schema.Schema.Type<typeof GenerateResult>;
  * /generate への入力スキーマ。
  * サーバー(Worker)では Effect.Schema として実行時検証に使い、
  * クライアント(Preact)では型のみを参照する（Effect ランタイムはクライアントに載せない）。
+ *
+ * セキュリティ: name/roots は LLM プロンプトに直接補間されるため、
+ * プロンプト肥大化によるコスト/DoS を防ぐ長さ上限を設ける（tracer-bullet の最低限の硬化）。
+ * より高度なサニタイズ/インジェクション対策は後続 issue で検討する。
  */
+export const NAME_MAX = 100;
+export const ROOTS_MAX = 500;
+
 export const GenerateInput = Schema.Struct({
-  name: Schema.String,
-  roots: Schema.optional(Schema.String),
+  name: Schema.String.pipe(Schema.maxLength(NAME_MAX)),
+  roots: Schema.optional(Schema.String.pipe(Schema.maxLength(ROOTS_MAX))),
   gender: Schema.optional(Gender),
   tone: Schema.optional(Schema.Array(ToneTag)),
 });

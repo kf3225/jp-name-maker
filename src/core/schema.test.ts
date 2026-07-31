@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { Effect, Schema } from 'effect';
-import { GenerateInput, GivenName } from './schema';
+import { GenerateInput, GivenName, NAME_MAX, ROOTS_MAX } from './schema';
 
 describe('GenerateInput', () => {
   it('accepts an object with a name', async () => {
@@ -23,6 +23,34 @@ describe('GenerateInput', () => {
   it('rejects an invalid tone literal', async () => {
     const exit = await Effect.runPromiseExit(
       Schema.decodeUnknown(GenerateInput)({ name: 'A', tone: ['sexy'] }),
+    );
+    expect(exit._tag).toBe('Failure');
+  });
+
+  it('accepts name at the length limit', async () => {
+    const exit = await Effect.runPromiseExit(
+      Schema.decodeUnknown(GenerateInput)({ name: 'a'.repeat(NAME_MAX) }),
+    );
+    expect(exit._tag).toBe('Success');
+  });
+
+  it('rejects name over the length limit', async () => {
+    const exit = await Effect.runPromiseExit(
+      Schema.decodeUnknown(GenerateInput)({ name: 'a'.repeat(NAME_MAX + 1) }),
+    );
+    expect(exit._tag).toBe('Failure');
+  });
+
+  it('accepts roots at the length limit', async () => {
+    const exit = await Effect.runPromiseExit(
+      Schema.decodeUnknown(GenerateInput)({ name: 'A', roots: 'b'.repeat(ROOTS_MAX) }),
+    );
+    expect(exit._tag).toBe('Success');
+  });
+
+  it('rejects roots over the length limit', async () => {
+    const exit = await Effect.runPromiseExit(
+      Schema.decodeUnknown(GenerateInput)({ name: 'A', roots: 'b'.repeat(ROOTS_MAX + 1) }),
     );
     expect(exit._tag).toBe('Failure');
   });
