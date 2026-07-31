@@ -11,7 +11,7 @@ issue 番号 `N` を指定して起動。
 2. **計画レビュー**（plan-reviewer）: `OK`/`CHANGES_REQUESTED`。**最大3往復**。
 3. **実装**（implementer）: worktree で実装。`vp check/test/build` Green → コミット（push しない）。
 4. **実装レビュー**（impl-reviewer）: **性能/セキュリティ最重視**。**最大3往復**。
-5. **PR作成**（pr-author）: push して `.github/pull_request_template.md` で PR。
+5. **PR作成**（pr-author）: push して `.github/pull_request_template.md` で PR。**AC確認**: 関連issueの各ACが本PRで解決されたか検証し、PR本文にAC対応表（達成/未達成・根拠）を載せる。解決したACは **issue本文のチェックボックスを `- [x]` に更新**（`gh issue view N --json body` → 該当AC行を `- [x]` → `gh issue edit N --body`）。全AC解決で `Closes #N`（自動クローズ）、未解決があれば `Closes` を付けず残課題と移管先をPR本文に明記。
 6. **報告**: PR URL と各ラウンド結果を要約。
 7. **マージ後クリーンアップ**（オーケストレータ・ユーザー通知後に実行）: マージは人間の操作（要承認）。ユーザーがマージ完了を通知した後に実行 — `git worktree list` で該当 worktree を特定し `git worktree remove <path>`、ローカルブランチ削除（`git branch -d <branch>`）、`git fetch --prune` でリモート追跡ブランチ整理。issue が `Closes #N` で自動クローズされたか確認し、未クローズなら `gh issue close N`。
 
