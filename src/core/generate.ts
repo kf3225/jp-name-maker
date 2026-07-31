@@ -1,7 +1,7 @@
 import { Effect, Data, Schema } from 'effect';
 import { AiClient, AiClientError } from './ai-client';
 import { GivenName } from './schema';
-import type { GenerateInput, Gender, ToneTag } from './schema';
+import type { GenerateInput, Gender, Locale, ToneTag } from './schema';
 import type { AiMessage } from '../worker-env';
 
 /**
@@ -41,8 +41,17 @@ export interface GivenNamePrompt {
 }
 
 /**
+ * locale に応じた根拠テキスト（rationale）生成言語の指示（ADR-0007）。
+ * 現状の GivenName 出力（kanji/kana・言語不変）には影響しない。
+ * 後続 issue（#2/#4）で rationale が加わったとき、LLM がユーザーロケールで自由テキストを生成するための前方互換配線。
+ */
+const rationaleLanguageLine = (locale: Locale): string =>
+  locale === 'ja' ? '根拠テキストの生成言語: 日本語。' : '根拠テキストの生成言語: 英語。';
+
+/**
  * 名生成のプロンプトを組み立てる（純粋関数）。
  * 響き名軸なので「音」を強調し、ルーツ/意味は使わない（意味名軸は後続 issue）。
+ * locale が与えられたときのみ根拠テキスト生成言語の指示を末尾に追加する（省略時は現状維持・前方互換）。
  */
 export const buildGivenNamePrompt = (input: GenerateInput): GivenNamePrompt => {
   const lines: string[] = [SYSTEM_PROMPT];
@@ -55,6 +64,10 @@ export const buildGivenNamePrompt = (input: GenerateInput): GivenNamePrompt => {
 
   if (input.gender) {
     lines.push(`性別の響きは ${GENDER_LABELS[input.gender]}。`);
+  }
+
+  if (input.locale) {
+    lines.push(rationaleLanguageLine(input.locale));
   }
 
   return {
