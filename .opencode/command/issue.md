@@ -13,5 +13,6 @@ agent: build
 4. **実装レビュー**: Task(subagent_type=impl-reviewer) で審査（性能/セキュリティ最重視）。`OK` まで**最大3往復**。
 5. **PR作成**: Task(subagent_type=pr-author) で push と PR 作成。
 6. **報告**: PR URL と各ラウンド結果・主要指摘を要約。
+7. **マージ後クリーンアップ**: ユーザーが「マージした」等の通知をした後に実行（マージ自体は人間の操作・要承認）。`git worktree list` で該当 worktree を特定して削除、ローカルブランチ `feat/$1-<slug>` を削除、`git fetch --prune`。issue が `Closes #$1` で自動クローズされたか確認（未クローズなら `gh issue close $1`）。
 
 各ロールの制約・ループ上限・worktree 規約は `.agents/workflow.md` に従う。3往復でも OK にならなければ未解決指摘をユーザーに提示。ガードレール（AGENTS.md/.github/.opencode/.claude/.vite-hooks/CODEOWNERS/Terraform/ADR の変更は要承認）を遵守。
